@@ -37,7 +37,7 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("Failed to load GOOGLE_API_KEY from .env")
 	}
 	if googleWeatherUrl == "" {
-		return nil, fmt.Errorf("Failed to load GOOGLE_WEATHER_URL from .env")
+		return nil, fmt.Errorf("Failed to load GOOGLE_WEATHER_URLq from .env")
 	}
 	if googleAqiUrl == "" {
 		return nil, fmt.Errorf("Failed to load GOOGLE_AQI_URL from .env")
@@ -46,6 +46,9 @@ func Load() (*Config, error) {
 	return &Config{
 		OLA_API_KEY:        olaApiKey,
 		OLA_DIRECTIONS_URL: olaDirectionsUrl,
+		GOOGLE_API_KEY:     googleApiKey,
+		GOOGLE_WEATHER_URL: googleWeatherUrl,
+		GOOGLE_AQI_URL:     googleAqiUrl,
 	}, nil
 
 }
