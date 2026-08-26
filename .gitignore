@@ -1,0 +1,28 @@
+# Environment and local configuration
+.env
+.env.*
+!.env.example
+
+# Go build and test artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+coverage.html
+pprof/
+bin/
+build/
+dist/
+# Test Files
+Test*
+test*
+# Editor and operating system files
+.DS_Store
+.idea/
+.vscode/*
+*.swp
+*.swo
