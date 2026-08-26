@@ -57,7 +57,7 @@ func (c *Client) Weather(
 
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Weather API respond with status code %s", res.StatusCode)
+		return nil, fmt.Errorf("Weather API respond with status code %d", res.StatusCode)
 	}
 
 	var response WeatherResponse
