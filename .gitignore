@@ -17,6 +17,7 @@ pprof/
 bin/
 build/
 dist/
+test/
 # Test Files
 Test*
 test*
