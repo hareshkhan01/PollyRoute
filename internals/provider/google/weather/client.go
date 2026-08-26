@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hareshkhan01/PollyRoute/internals/domain"
@@ -17,14 +18,20 @@ type Client struct {
 	HttpClient *http.Client
 }
 
-func NewClient(apiKey string, weatherUrl string) *Client {
+func NewClient(apiKey string, weatherUrl string) (*Client, error) {
+	if strings.TrimSpace(apiKey) == "" {
+		return nil, fmt.Errorf("Api Key is Empty!")
+	}
+	if strings.TrimSpace(weatherUrl) == "" {
+		return nil, fmt.Errorf("Weather Url is Empty!")
+	}
 	return &Client{
 		ApiKey:  apiKey,
 		BaseUrl: weatherUrl,
 		HttpClient: &http.Client{
 			Timeout: 1 * time.Minute,
 		},
-	}
+	}, nil
 }
 
 func (c *Client) Weather(
@@ -48,14 +55,14 @@ func (c *Client) Weather(
 		return nil, fmt.Errorf("Weather Request Failed! %w", err)
 	}
 
-	defer req.Body.Close()
+	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Weather API respond with status code %s", res.StatusCode)
 	}
 
 	var response WeatherResponse
 
-	if err := json.NewDecoder(res.Body).Decode(response); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
 		return nil, fmt.Errorf("Failed to parse the Weather Response! %w", err)
 	}
 

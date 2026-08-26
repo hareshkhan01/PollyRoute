@@ -20,6 +20,7 @@ dist/
 # Test Files
 Test*
 test*
+cmd/*-test
 # Editor and operating system files
 .DS_Store
 .idea/
