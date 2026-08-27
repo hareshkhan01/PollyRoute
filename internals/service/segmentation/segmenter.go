@@ -12,6 +12,8 @@ func RouteSegmentationService(coordinates []domain.Coordinate) []domain.RouteSeg
 	var currDistance float64
 	var currCoordinates []domain.Coordinate
 	index := 0
+	var midPoint domain.Coordinate
+	isMidPointSet := false
 	for i := 1; i < len(coordinates); i++ {
 		distance := geo.Haversine(
 			coordinates[i-1],
@@ -19,25 +21,34 @@ func RouteSegmentationService(coordinates []domain.Coordinate) []domain.RouteSeg
 		)
 		currCoordinates = append(currCoordinates, coordinates[i-1])
 		currDistance += distance
+		if currDistance >= 2500.0 && !isMidPointSet {
+			midPoint = coordinates[i]
+			isMidPointSet = true
+		}
 		if currDistance >= 5000.0 {
 			currCoordinates = append(currCoordinates, coordinates[i])
 			segments = append(segments, domain.RouteSegment{
 				Index:       index,
 				Coordinates: currCoordinates,
 				Distance:    currDistance,
-				Midpoint:    currCoordinates[len(currCoordinates)/2],
+				Midpoint:    midPoint,
 			})
 			currCoordinates = nil
 			currDistance = 0
+			midPoint = domain.Coordinate{}
+			isMidPointSet = false
 			index++
 		}
 	}
 	if len(currCoordinates) > 0 {
+		if !isMidPointSet {
+			midPoint = currCoordinates[len(currCoordinates)/2]
+		}
 		segments = append(segments, domain.RouteSegment{
 			Index:       index,
 			Coordinates: currCoordinates,
 			Distance:    currDistance,
-			Midpoint:    currCoordinates[len(currCoordinates)/2],
+			Midpoint:    midPoint,
 		})
 	}
 	return segments
