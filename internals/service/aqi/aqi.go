@@ -1,0 +1,5 @@
+package aqi
+
+func AqiService() {
+
+}
