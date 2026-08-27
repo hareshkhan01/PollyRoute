@@ -21,6 +21,7 @@ test/
 # Test Files
 Test*
 test*
+Task.txt
 cmd/*-test
 # Editor and operating system files
 .DS_Store
