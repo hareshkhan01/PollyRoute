@@ -35,7 +35,7 @@ func NewClient(apiKey string, AqiUrl string) (*Client, error) {
 }
 
 func (c *Client) Aqi(
-	context *context.Context,
+	context context.Context,
 	location domain.Coordinate,
 ) (*AQIResponse, error) {
 
@@ -54,7 +54,7 @@ func (c *Client) Aqi(
 		return nil, fmt.Errorf("Failed to Marshal AQI Request Body! %w", err)
 	}
 	req, err := http.NewRequestWithContext(
-		*context,
+		context,
 		http.MethodPost,
 		c.BaseUrl,
 		bytes.NewBuffer(requestBodyJson),
