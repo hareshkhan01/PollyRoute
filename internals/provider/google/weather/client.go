@@ -35,10 +35,10 @@ func NewClient(apiKey string, weatherUrl string) (*Client, error) {
 }
 
 func (c *Client) Weather(
-	context *context.Context,
+	context context.Context,
 	location domain.Coordinate,
 ) (*WeatherResponse, error) {
-	req, err := http.NewRequestWithContext(*context, http.MethodGet, c.BaseUrl, nil)
+	req, err := http.NewRequestWithContext(context, http.MethodGet, c.BaseUrl, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create Weather Request! %w", err)
 	}
