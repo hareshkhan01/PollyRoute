@@ -3,35 +3,33 @@ package route
 import (
 	"context"
 	"fmt"
-	"log"
 
-	"github.com/hareshkhan01/PollyRoute/internals/config"
 	"github.com/hareshkhan01/PollyRoute/internals/domain"
 	"github.com/hareshkhan01/PollyRoute/internals/provider/ola"
 )
 
-func DirectionService(origin *domain.Coordinate, destination *domain.Coordinate) *domain.Routes {
-	config, err := config.Load()
+type DirectionService struct {
+	olaClient *ola.Client
+}
+
+func NewDirectionService(client *ola.Client) *DirectionService {
+	return &DirectionService{
+		olaClient: client,
+	}
+}
+func (o *DirectionService) GetDirection(ctx context.Context, origin *domain.Coordinate, destination *domain.Coordinate) (*domain.Routes, error) {
+
+	originString := fmt.Sprintf("%f,%f", origin.Lat, origin.Lng)
+	destinationString := fmt.Sprintf("%f,%f", destination.Lat, destination.Lng)
+	response, err := o.olaClient.Directions(ctx, originString, destinationString, true)
 
 	if err != nil {
-		log.Fatalf("Can not  Load the Config File %w", err)
+		return nil, fmt.Errorf("fetch directions from OLA: %w", err)
 	}
 
-	olaClient, err := ola.NewClient(
-		config.OLA_API_KEY,
-		config.OLA_DIRECTIONS_URL,
-	)
+	mappedResponse, err := ola.MapResponse(response)
 	if err != nil {
-		log.Fatalf("Can not create Ola Client %w", err)
+		return nil, fmt.Errorf("map OLA response: %w", err)
 	}
-	ctx := context.Background()
-	originString := fmt.Sprintf("%s,%s", origin.Lat, origin.Lng)
-	destinationString := fmt.Sprintf("%s,%s", destination.Lat, destination.Lng)
-	response, err := olaClient.Directions(&ctx, originString, destinationString, true)
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil
-	}
-
+	return mappedResponse, nil
 }

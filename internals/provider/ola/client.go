@@ -28,14 +28,14 @@ func NewClient(apiKey string, directionUrl string) (*Client, error) {
 }
 
 func (c *Client) Directions(
-	context *context.Context,
+	context context.Context,
 	origin string,
 	destination string,
 	alternatives bool,
 ) (*Response, error) {
 
 	req, err := http.NewRequestWithContext(
-		*context,
+		context,
 		http.MethodPost,
 		c.BaseUrl,
 		nil,

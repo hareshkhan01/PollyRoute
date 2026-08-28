@@ -9,9 +9,9 @@ import (
 	"github.com/hareshkhan01/PollyRoute/pkg/polyline"
 )
 
-func MapResponse(response Response) (domain.Routes, error) {
+func MapResponse(response *Response) (*domain.Routes, error) {
 	if response.Status != "SUCCESS" {
-		return domain.Routes{}, fmt.Errorf("OLA Direction Request/Response failed status %v", response.Status)
+		return nil, fmt.Errorf("OLA Direction Request/Response failed status %v", response.Status)
 	}
 
 	routes := make([]domain.Route, 0, len(response.Routes))
@@ -19,11 +19,11 @@ func MapResponse(response Response) (domain.Routes, error) {
 	for _, route := range response.Routes {
 		mappedRoute, err := mapRoute(route)
 		if err != nil {
-			return domain.Routes{}, err
+			return nil, err
 		}
 		routes = append(routes, mappedRoute)
 	}
-	return domain.Routes{
+	return &domain.Routes{
 		Routes: routes,
 	}, nil
 }
