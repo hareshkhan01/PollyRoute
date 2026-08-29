@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/hareshkhan01/PollyRoute/internals/domain"
@@ -51,53 +52,58 @@ func (r *RouteAnalyzeService) AnalyzeRoutes(
 
 	for _, route := range routes.Routes {
 		segments := r.segmentationService.SegmentatRoute(route.Coordinates)
+		var wg sync.WaitGroup
 		for i := range segments {
-			segment := &segments[i]
-			weatherCh := make(chan *domain.Weather, 1)
-			aqiCh := make(chan *domain.AQIAndPollutants, 1)
-
-			var wg sync.WaitGroup
-			wg.Add(2)
-
-			var weatherError error
-			var aqiError error
-
-			go func() {
+			wg.Add(1)
+			go func(i int) {
 				defer wg.Done()
-				weatherCh <- func() *domain.Weather {
-					weather, err := r.weatherService.GetWeather(
+
+				segment := &segments[i]
+
+				var (
+					weatherResponse *domain.Weather
+					aqiResponse     *domain.AQIAndPollutants
+
+					weatherErr error
+					aqiErr     error
+				)
+
+				var inner sync.WaitGroup
+				inner.Add(2)
+
+				go func() {
+					defer inner.Done()
+
+					weatherResponse, weatherErr = r.weatherService.GetWeather(
 						ctx, segment.Midpoint,
 					)
-					weatherError = err
-					return weather
 				}()
-			}()
 
-			go func() {
-				defer wg.Done()
-				aqiCh <- func() *domain.AQIAndPollutants {
-					aqi, err := r.aqiService.GetAqi(
+				go func() {
+					defer inner.Done()
+					aqiResponse, aqiErr = r.aqiService.GetAqi(
 						ctx,
 						segment.Midpoint,
 					)
-					aqiError = err
-					return aqi
 				}()
-			}()
-			wg.Wait()
+				inner.Wait()
 
-			if weatherError != nil {
-				return nil, weatherError
-			}
+				if weatherErr != nil {
+					fmt.Println(weatherErr)
+					return
+				}
 
-			if aqiError != nil {
-				return nil, aqiError
-			}
+				if aqiErr != nil {
+					fmt.Println(aqiErr)
+					return
+				}
 
-			segment.Weather = <-weatherCh
-			segment.AqiAndPollutants = <-aqiCh
+				segment.Weather = weatherResponse
+				segment.AqiAndPollutants = aqiResponse
+			}(i)
 
 		}
+		wg.Wait()
 		pollutionScore := r.scoreService.CalculatePollutionScore(segments)
 		weatherScore := r.scoreService.CalculateWeatherScore(segments)
 		trafficScore := r.scoreService.CalculateTrafficScore(route.TrafficRanges)
