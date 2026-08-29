@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"sync"
 
 	"github.com/hareshkhan01/PollyRoute/internals/domain"
 	"github.com/hareshkhan01/PollyRoute/internals/service/aqi"
@@ -52,22 +53,50 @@ func (r *RouteAnalyzeService) AnalyzeRoutes(
 		segments := r.segmentationService.SegmentatRoute(route.Coordinates)
 		for i := range segments {
 			segment := &segments[i]
-			aqiResponse, err := r.aqiService.GetAqi(
-				ctx,
-				segment.Midpoint,
-			)
-			if err != nil {
-				return nil, err
+			weatherCh := make(chan *domain.Weather, 1)
+			aqiCh := make(chan *domain.AQIAndPollutants, 1)
+
+			var wg sync.WaitGroup
+			wg.Add(2)
+
+			var weatherError error
+			var aqiError error
+
+			go func() {
+				defer wg.Done()
+				weatherCh <- func() *domain.Weather {
+					weather, err := r.weatherService.GetWeather(
+						ctx, segment.Midpoint,
+					)
+					weatherError = err
+					return weather
+				}()
+			}()
+
+			go func() {
+				defer wg.Done()
+				aqiCh <- func() *domain.AQIAndPollutants {
+					aqi, err := r.aqiService.GetAqi(
+						ctx,
+						segment.Midpoint,
+					)
+					aqiError = err
+					return aqi
+				}()
+			}()
+			wg.Wait()
+
+			if weatherError != nil {
+				return nil, weatherError
 			}
-			weatherResponse, err := r.weatherService.GetWeather(
-				ctx,
-				segment.Midpoint,
-			)
-			if err != nil {
-				return nil, err
+
+			if aqiError != nil {
+				return nil, aqiError
 			}
-			segment.AqiAndPollutants = aqiResponse
-			segment.Weather = weatherResponse
+
+			segment.Weather = <-weatherCh
+			segment.AqiAndPollutants = <-aqiCh
+
 		}
 		pollutionScore := r.scoreService.CalculatePollutionScore(segments)
 		weatherScore := r.scoreService.CalculateWeatherScore(segments)
