@@ -5,12 +5,14 @@ type Routes struct {
 }
 
 type Route struct {
-	TotalDistance int64
-	TotalDuration int64
-	Coordinates   []Coordinate
-	TrafficRanges []TrafficRange
-	IsSuspicious  bool
-	Copyrights    string
+	TotalDistance   int64
+	TotalDuration   int64
+	Polyline        string
+	TrafficAdvisory string
+	Coordinates     []Coordinate
+	TrafficRanges   []TrafficRange
+	IsSuspicious    bool
+	Copyrights      string
 }
 
 type Coordinate struct {
@@ -25,10 +27,12 @@ type TrafficRange struct {
 }
 
 type RouteSegment struct {
-	Index       int
-	Coordinates []Coordinate
-	Distance    float64
-	Midpoint    Coordinate
+	Index            int
+	Coordinates      []Coordinate
+	Distance         float64
+	Midpoint         Coordinate
+	AqiAndPollutants *AQIAndPollutants
+	Weather          *Weather
 }
 
 /*
@@ -40,3 +44,12 @@ Coordinates[]{C1,C2,C3,C4,C5}
 Distance 5300
 Midpoint - C4
 */
+
+type AnalyzedRoute struct {
+	Route         Route
+	Segments      []RouteSegment
+	WeatherScore  float64
+	TrafficScore  float64
+	AqiScore      float64
+	BalancedScore float64
+}

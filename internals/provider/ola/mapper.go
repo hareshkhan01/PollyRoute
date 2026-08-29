@@ -42,19 +42,21 @@ func mapRoute(route Route) (domain.Route, error) {
 			err,
 		)
 	}
-	trafficRanges, err := mapTrafficAdvisory(route.TraverAdvisory)
+	trafficRanges, err := mapTrafficAdvisory(route.TravelAdvisory)
 	if err != nil {
 		return domain.Route{}, fmt.Errorf("Failed to map traffic advisory %w", err)
 	}
 	isSuspicious := hasSuspiciousManeuver(leg.Steps)
 
 	return domain.Route{
-		TotalDistance: leg.Distance,
-		TotalDuration: leg.Duration,
-		Coordinates:   coordiantes,
-		TrafficRanges: trafficRanges,
-		IsSuspicious:  isSuspicious,
-		Copyrights:    route.Copyrights,
+		TotalDistance:   leg.Distance,
+		TotalDuration:   leg.Duration,
+		Polyline:        route.Polyline,
+		Coordinates:     coordiantes,
+		TrafficRanges:   trafficRanges,
+		TrafficAdvisory: route.TravelAdvisory,
+		IsSuspicious:    isSuspicious,
+		Copyrights:      route.Copyrights,
 	}, nil
 
 }

@@ -5,8 +5,15 @@ import (
 	"github.com/hareshkhan01/PollyRoute/pkg/geo"
 )
 
+type SegmentationService struct {
+}
+
+func NewSegmentationService() *SegmentationService {
+	return &SegmentationService{}
+}
+
 // This  function is used to divide the route into 5km segment using haversine mathematical formula
-func RouteSegmentationService(coordinates []domain.Coordinate) []domain.RouteSegment {
+func (s *SegmentationService) SegmentatRoute(coordinates []domain.Coordinate) []domain.RouteSegment {
 	segments := make([]domain.RouteSegment, 0)
 
 	var currDistance float64
@@ -47,10 +54,12 @@ func RouteSegmentationService(coordinates []domain.Coordinate) []domain.RouteSeg
 		}
 		currCoordinates = append(currCoordinates, coordinates[i-1]) // add the last remaining coordinate
 		segments = append(segments, domain.RouteSegment{
-			Index:       index,
-			Coordinates: currCoordinates,
-			Distance:    currDistance,
-			Midpoint:    midPoint,
+			Index:            index,
+			Coordinates:      currCoordinates,
+			Distance:         currDistance,
+			Midpoint:         midPoint,
+			Weather:          nil,
+			AqiAndPollutants: nil,
 		})
 	}
 	return segments

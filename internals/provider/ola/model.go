@@ -8,7 +8,7 @@ type Response struct {
 type Route struct {
 	Legs           []Leg  `json:"legs"`
 	Polyline       string `json:"overview_polyline"`
-	TraverAdvisory string `json:"travel_advisory"`
+	TravelAdvisory string `json:"travel_advisory"`
 	Copyrights     string `json:"copyrights"`
 }
 
