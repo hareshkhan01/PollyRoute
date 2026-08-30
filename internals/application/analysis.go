@@ -37,6 +37,7 @@ func NewRouteAnalyzeService(
 	}
 }
 
+// There is certinain risk of thread blocking if there are many segemnets(for a large distance route) should use some concurrency limitation
 func (r *RouteAnalyzeService) AnalyzeRoutes(
 	ctx context.Context,
 	origin *domain.Coordinate,

@@ -49,6 +49,7 @@ func (c *Client) Directions(
 	query.Set("origin", origin)
 	query.Set("destination", destination)
 	query.Set("alternatives", strconv.FormatBool(alternatives))
+	query.Set("traffic_metadata", strconv.FormatBool(true))
 	query.Set("api_key", c.ApiKey)
 
 	req.URL.RawQuery = query.Encode()
