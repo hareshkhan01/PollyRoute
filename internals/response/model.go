@@ -1,6 +1,6 @@
 package response
 
-type AnalysisRouteReponse struct {
+type AnalysisRouteResponse struct {
 	Routes []RouteResponse `json:"routes"`
 }
 

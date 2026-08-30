@@ -4,8 +4,8 @@ import (
 	"github.com/hareshkhan01/PollyRoute/internals/domain"
 )
 
-func ToAnalysisRouteReponse(routes []domain.AnalyzedRoute) AnalysisRouteReponse {
-	response := AnalysisRouteReponse{
+func ToAnalysisRouteResponse(routes []domain.AnalyzedRoute) AnalysisRouteResponse {
+	response := AnalysisRouteResponse{
 		Routes: make([]RouteResponse, 0, len(routes)),
 	}
 
