@@ -3,10 +3,12 @@ package domain
 import "time"
 
 type User struct {
-	Name      string
-	Email     string
-	Password  string
-	CreatedAt time.Time
-	ExpiresAt time.Time
-	RevokedAt time.Time
+	ID           string    // Can not be null
+	Name         string    // Can not be null
+	Email        string    // Can not be null
+	PasswordHash string    // Can not be null
+	CreatedAt    time.Time // Can not be null
+
+	RefreshToken          *string    // Can be null
+	RefreshTokenExpiresAt *time.Time //Can be null
 }
