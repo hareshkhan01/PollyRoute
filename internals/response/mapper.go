@@ -38,7 +38,7 @@ func toTrafficResponse(trafficRanges []domain.TrafficRange) []TrafficResponse {
 	trafficResponse := make([]TrafficResponse, 0)
 
 	for _, trafficRange := range trafficRanges {
-		if trafficRange.Congestion >= 3 {
+		if trafficRange.Congestion >= 10 {
 			trafficResponse = append(trafficResponse, TrafficResponse{
 				Start:      trafficRange.Start,
 				End:        trafficRange.End,

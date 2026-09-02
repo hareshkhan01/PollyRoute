@@ -71,11 +71,11 @@ func main() {
 
 	// Router
 	r := router.SetupRouter(routeHandler)
-
+	port := cfg.PORT
 	// Server
-	log.Println("PollyRoute server running on :8080")
+	log.Println("PollyRoute server running on :", port)
 
-	if err := r.Run(":8080"); err != nil {
+	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("start server: %v", err)
 	}
 }
