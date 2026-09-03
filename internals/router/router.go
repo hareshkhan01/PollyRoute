@@ -3,24 +3,37 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/hareshkhan01/PollyRoute/internals/handlers"
+	"github.com/hareshkhan01/PollyRoute/internals/middleware"
 )
 
 func SetupRouter(
 	routeHandler *handlers.RouteHandler,
 	authHandlers *handlers.AuthHandlers,
+	jwtSecret string,
 ) *gin.Engine {
 	router := gin.Default()
 
-	api := router.Group("/api")
+	api := router.Group("/api/v1")
 
-	auth := api.Group("/auth")
+	publicAuth := api.Group("/auth")
+	{
+		publicAuth.POST("/login", authHandlers.Login)
+		publicAuth.POST("/register", authHandlers.Register)
+		publicAuth.POST("/refresh", authHandlers.Refresh)
+	}
 
-	api.POST("/routes/analyze", routeHandler.AnalyzedRoutes)
+	protectedAuth := api.Group("/auth")
+	protectedAuth.Use(middleware.AuthMiddleware(jwtSecret))
+	{
+		protectedAuth.POST("/logout", authHandlers.Logout)
+	}
 
-	auth.POST("/login", authHandlers.Login)
-	auth.POST("/register", authHandlers.Register)
-	auth.POST("/refresh", authHandlers.Refresh)
-	auth.POST("/logout", authHandlers.Logout)
+	protectedApi := api.Group("/routes")
+
+	protectedApi.Use(middleware.AuthMiddleware(jwtSecret))
+	{
+		protectedApi.POST("/analyze", routeHandler.AnalyzedRoutes)
+	}
 
 	return router
 }

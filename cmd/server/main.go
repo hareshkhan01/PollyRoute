@@ -89,7 +89,7 @@ func main() {
 		cfg.JWT_SECRET,
 	)
 	// Router
-	r := router.SetupRouter(routeHandler, authHandler)
+	r := router.SetupRouter(routeHandler, authHandler, cfg.JWT_SECRET)
 	port := cfg.PORT
 	// Server
 	log.Println("PollyRoute server running on :", port)
