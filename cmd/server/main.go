@@ -1,16 +1,20 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/hareshkhan01/PollyRoute/internals/application"
 	"github.com/hareshkhan01/PollyRoute/internals/config"
+	"github.com/hareshkhan01/PollyRoute/internals/db"
 	"github.com/hareshkhan01/PollyRoute/internals/handlers"
 	"github.com/hareshkhan01/PollyRoute/internals/provider/google/aqi"
 	googleWeather "github.com/hareshkhan01/PollyRoute/internals/provider/google/weather"
 	"github.com/hareshkhan01/PollyRoute/internals/provider/ola"
+	"github.com/hareshkhan01/PollyRoute/internals/repository"
 	"github.com/hareshkhan01/PollyRoute/internals/router"
 	aqiService "github.com/hareshkhan01/PollyRoute/internals/service/aqi"
+	authService "github.com/hareshkhan01/PollyRoute/internals/service/auth"
 	routeService "github.com/hareshkhan01/PollyRoute/internals/service/route"
 	"github.com/hareshkhan01/PollyRoute/internals/service/scoring"
 	"github.com/hareshkhan01/PollyRoute/internals/service/segmentation"
@@ -69,8 +73,23 @@ func main() {
 		routeAnalysisService,
 	)
 
+	dbPool, err := db.NewPool(cfg.DATABASE_URL, context.Background())
+	if err != nil {
+		log.Fatalf("Creating New db Pool: %v ", err)
+	}
+	log.Println("Connecting to DB Successful:")
+	log.Println(dbPool.Config().ConnConfig.Config.Host)
+
+	authService := authService.NewAuthService(
+		repository.NewUserRepository(dbPool),
+		cfg.JWT_SECRET,
+	)
+	authHandler := handlers.NewAuthHandlers(
+		authService,
+		cfg.JWT_SECRET,
+	)
 	// Router
-	r := router.SetupRouter(routeHandler)
+	r := router.SetupRouter(routeHandler, authHandler)
 	port := cfg.PORT
 	// Server
 	log.Println("PollyRoute server running on :", port)

@@ -6,12 +6,14 @@ import (
 )
 
 type AuthHandlers struct {
-	authService *auth.AuthService
+	authService auth.AuthService
+	jwtSecret   string
 }
 
-func NewAuthHandlers(authService *auth.AuthService) *AuthHandlers {
+func NewAuthHandlers(authService auth.AuthService, jwtSecret string) *AuthHandlers {
 	return &AuthHandlers{
 		authService: authService,
+		jwtSecret:   jwtSecret,
 	}
 }
 

@@ -15,8 +15,9 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, name string, email string, password_hash string) (string, error)
 	UpdateRefreshToken(ctx context.Context, userId string, token *string, expiresAt *time.Time) error
 	FindByEmail(ctx context.Context, email string) (*domain.User, error)
-	UpdateUser(ctx context.Context, id string, name string, email string, password_hash string) error
+	FindByUserId(ctx context.Context, userId string) (*domain.User, error)
 	FindByRefreshToken(ctx context.Context, token string) (*domain.User, error)
+	UpdateUser(ctx context.Context, id string, name string, email string, password_hash string) error
 	DeleteUserById(ctx context.Context, userId string) error
 	DeleteUserByEmail(ctx context.Context, email string) error
 }
@@ -75,6 +76,35 @@ func (ur *userRepository) FindByEmail(
 	var user domain.User
 
 	err := ur.dbPool.QueryRow(ctx, query, email).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.PasswordHash,
+		&user.RefreshToken,
+		&user.RefreshTokenExpiresAt,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, pgx.ErrNoRows
+		}
+		return nil, err
+	}
+
+	return &user, nil
+
+}
+
+func (ur *userRepository) FindByUserId(
+	ctx context.Context,
+	userId string,
+) (*domain.User, error) {
+	query := `SELECT id,name,email,password_hash,refresh_token,refresh_token_expires_at,created_at FROM users WHERE id=$1`
+
+	var user domain.User
+
+	err := ur.dbPool.QueryRow(ctx, query, userId).Scan(
 		&user.ID,
 		&user.Name,
 		&user.Email,
