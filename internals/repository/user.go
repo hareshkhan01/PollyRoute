@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hareshkhan01/PollyRoute/internals/domain"
@@ -15,6 +16,9 @@ type UserRepository interface {
 	UpdateRefreshToken(ctx context.Context, userId string, token *string, expiresAt *time.Time) error
 	FindByEmail(ctx context.Context, email string) (*domain.User, error)
 	UpdateUser(ctx context.Context, id string, name string, email string, password_hash string) error
+	FindByRefreshToken(ctx context.Context, token string) (*domain.User, error)
+	DeleteUserById(ctx context.Context, userId string) error
+	DeleteUserByEmail(ctx context.Context, email string) error
 }
 
 type userRepository struct {
@@ -66,7 +70,7 @@ func (ur *userRepository) FindByEmail(
 	ctx context.Context,
 	email string,
 ) (*domain.User, error) {
-	query := `SELECT id,name,email,password_hash,refresh_token,refresh_token_expires_at,created_at FROM users WHERE email=%1`
+	query := `SELECT id,name,email,password_hash,refresh_token,refresh_token_expires_at,created_at FROM users WHERE email=$1`
 
 	var user domain.User
 
@@ -103,6 +107,56 @@ func (ur *userRepository) UpdateUser(
 	if err != nil {
 		return fmt.Errorf("Repository: Failed to update user -  %w", err)
 	}
+	if commandTag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+	return nil
+}
+
+func (ur *userRepository) FindByRefreshToken(ctx context.Context, token string) (*domain.User, error) {
+	if strings.TrimSpace(token) == "" {
+		return nil, fmt.Errorf("Token is Empty!")
+	}
+	query := `SELECT id,name,email,password_hash,refresh_token,refresh_token_expires_at,created_at FROM users WHERE refresh_token=$1`
+
+	var user domain.User
+	err := ur.dbPool.QueryRow(ctx, query, token).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.PasswordHash,
+		&user.RefreshToken,
+		&user.RefreshTokenExpiresAt,
+		&user.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (ur *userRepository) DeleteUserById(ctx context.Context, userId string) error {
+	query := `DELETE FROM users WHERE id=$1`
+	commandTag, err := ur.dbPool.Exec(ctx, query, userId)
+
+	if err != nil {
+		return fmt.Errorf("Failed to delete %w", err)
+	}
+
+	if commandTag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+	return nil
+}
+
+func (ur *userRepository) DeleteUserByEmail(ctx context.Context, email string) error {
+	query := `DELETE FROM users WHERE email=$1`
+	commandTag, err := ur.dbPool.Exec(ctx, query, email)
+
+	if err != nil {
+		return fmt.Errorf("Failed to delete %w", err)
+	}
+
 	if commandTag.RowsAffected() == 0 {
 		return pgx.ErrNoRows
 	}
