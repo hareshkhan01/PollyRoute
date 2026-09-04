@@ -20,15 +20,15 @@ func SetupRouter(
 
 	publicAuth := api.Group("/auth")
 	{
-		publicAuth.POST("/login", authHandlers.Login(ctx))
-		publicAuth.POST("/register", authHandlers.Register(ctx))
-		publicAuth.POST("/refresh", authHandlers.Refresh(ctx))
+		publicAuth.POST("/login", authHandlers.Login)
+		publicAuth.POST("/register", authHandlers.Register)
+		publicAuth.POST("/refresh", authHandlers.Refresh)
 	}
 
 	protectedAuth := api.Group("/auth")
 	protectedAuth.Use(middleware.AuthMiddleware(jwtSecret))
 	{
-		protectedAuth.POST("/logout", authHandlers.Logout(ctx))
+		protectedAuth.POST("/logout", authHandlers.Logout)
 	}
 
 	protectedApi := api.Group("/routes")

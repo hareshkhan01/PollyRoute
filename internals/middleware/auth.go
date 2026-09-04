@@ -20,11 +20,13 @@ func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 		tokenString := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer"))
 		if tokenString == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+			return
 		}
 
 		userId, err := security.VerifyJwtToken(tokenString, jwtSecret)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid token."})
+			return
 		}
 
 		c.Set("userId", userId)
