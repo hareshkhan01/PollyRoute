@@ -73,7 +73,9 @@ func main() {
 		routeAnalysisService,
 	)
 
-	dbPool, err := db.NewPool(cfg.DATABASE_URL, context.Background())
+	ctx := context.Background()
+
+	dbPool, err := db.NewPool(cfg.DATABASE_URL, ctx)
 	if err != nil {
 		log.Fatalf("Creating New db Pool: %v ", err)
 	}
@@ -86,10 +88,9 @@ func main() {
 	)
 	authHandler := handlers.NewAuthHandlers(
 		authService,
-		cfg.JWT_SECRET,
 	)
 	// Router
-	r := router.SetupRouter(routeHandler, authHandler, cfg.JWT_SECRET)
+	r := router.SetupRouter(routeHandler, authHandler, cfg.JWT_SECRET, ctx)
 	port := cfg.PORT
 	// Server
 	log.Println("PollyRoute server running on :", port)
